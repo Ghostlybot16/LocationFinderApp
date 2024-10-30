@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "127470299426",
+    "project_id": "locationfinderapp-8b92e",
+    "storage_bucket": "locationfinderapp-8b92e.appspot.com",
+    "firebase_url": "https://locationfinderapp-8b92e-default-rtdb.firebaseio.com/"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:127470299426:android:a85a05149ee8569f219d7b",
+        "android_client_info": {
+          "package_name": "com.example.localfinder_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD26sJgb52FSin5SkJ9T26qx8je2fBRf5w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
