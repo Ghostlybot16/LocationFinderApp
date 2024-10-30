@@ -28,3 +28,5 @@ local.properties
 #Ignore class files
 *.class
 
+#Ignore google-services.json file
+app/google-services.json
