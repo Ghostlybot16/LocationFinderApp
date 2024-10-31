@@ -14,22 +14,68 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize Firebase Realtime Database
+        // Calling the setup method to initialize data in Firebase DB
+        // Should be commented out after running it the first time
+        // setupInitialDB();
+    }
+
+    // Method to set up initial location data in FirebaseDB
+    private void setupInitialDB() {
+
+        // Instance of the database
         FirebaseDatabase firebaseDB = FirebaseDatabase.getInstance();
-        DatabaseReference dbRef = firebaseDB.getReference("testNode");
 
-        // Write a message to the DB
-        dbRef.setValue("Firebase setup successful!") // The output to the Firebase console
-                .addOnCompleteListener( task -> {
+        // Reference to the "locations" node in Firebase DB
+        DatabaseReference locationsRef = firebaseDB.getReference("Locations");
 
-                    // Output to Logcat terminal
-                    // Tag is the tag name that appears in Logcat
-                    // Msg is the message attached to the Tag name.
+        // Adding sample entry
+        locationsRef.child("1").setValue(new Location("123 Main St, Toronto, ON", 43.65107, -79.347015))
+                .addOnCompleteListener(task -> {
+
+                    // Check to see if operation was a success
                     if (task.isSuccessful()) {
-                        Log.d("FirebaseTest", "Data written successfully"); // Debug message
+
+                        // Log success message to Logcat
+                        Log.d("FirebaseSetup", "Sample location 1 added successfully");
                     } else {
-                        Log.e("FirebaseTest", "Failed to write data", task.getException()); // Error message
+
+                        // Log error message to Logcat
+                        Log.e("FirebaseSetup", "Failed to add location 1", task.getException());
                     }
                 });
+
+        // Adding another sample entry
+        locationsRef.child("2").setValue(new Location("456 King St, Toronto, ON", 43.6555, -79.3806))
+                .addOnCompleteListener(task -> {
+
+                    // Check to see if operation was a success
+                    if (task.isSuccessful()) {
+
+                        // Log success message to Logcat
+                        Log.d("FirebaseSetup", "Sample location 2 added successfully");
+                    } else {
+
+                        // Log error message to Logcat
+                        Log.e("FirebaseSetup", "Failed to add location 2", task.getException());
+                    }
+                });
+    }
+
+    // Location class to represent each location entry in Firebase DB
+    public static class Location {
+        public String address; // Stores the address of the location
+        public double latitudeValue; // Stores the latitude coordinate
+        public double longitudeValue; // Stores the longitude coordinate
+
+        // Default constructor
+        @SuppressWarnings("unused") // Suppresses "unused" warning
+        public Location() {
+        }
+
+        public Location(String address, double latitude, double longitude) {
+            this.address = address;
+            this.latitudeValue = latitude;
+            this.longitudeValue = longitude;
+        }
     }
 }
