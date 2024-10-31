@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         // Placeholder value for user-input address input. This value will come from the UI later on
         String userAddressInput = "123 Main St, Toronto, ON";
 
+        addNewLocation("3", "321 Test Avenue, Toronto, ON", 43.1234, -43.3213);
+
         // Call queryLocationByAddress method with the sample address and handle result using callback
         queryLocationByAddress(userAddressInput, new QueryResultCallback() {
             @Override
@@ -147,6 +149,32 @@ public class MainActivity extends AppCompatActivity {
                 callback.queryResult(null);
             }
         });
+    }
+
+    // Method to add a new location to FirebaseDB
+    public void addNewLocation(String id, String address, double latitude, double longitude) {
+
+        // Reference to the "Locations" table in FirebaseDB
+        DatabaseReference locationsDBRef = FirebaseDatabase.getInstance().getReference("Locations");
+
+        // Create a new location object with the user-input details
+        Location newLocationDBEntry = new Location(address, latitude, longitude);
+
+        // Add the new location under the specified ID
+        locationsDBRef.child(id).setValue(newLocationDBEntry)
+                .addOnCompleteListener(task -> { // Listener to handle the result of the operation
+
+                    // Check to see if operation was successful
+                    if(task.isSuccessful()) {
+
+                        // Log message indicating success
+                        Log.d("AddLocationSuccess", "New location added successfully. ");
+                    } else {
+
+                        // Log message indicating fail
+                        Log.e("AddLocationError", "Failed to add new location.", task.getException());
+                    }
+                });
     }
 
     // Callback interface to handle query results
