@@ -14,6 +14,12 @@ import com.google.firebase.database.DatabaseError;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Helper method to get the reference tot the "Locations" table in FirebaseDB
+    // This helper method is created because this line of code is being referred to many times
+    private DatabaseReference locationsDBRef() {
+        return FirebaseDatabase.getInstance().getReference("Locations");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +32,9 @@ public class MainActivity extends AppCompatActivity {
         // Placeholder value for user-input address input. This value will come from the UI later on
         String userAddressInput = "123 Main St, Toronto, ON";
 
-        addNewLocation("3", "321 Test Avenue, Toronto, ON", 43.1234, -43.3213);
+        // addNewLocation("3", "321 Test Avenue, Toronto, ON", 43.1234, -43.3213);
+
+        generateIDAndAddLocation("433 Avenue Drive, Toronto, ON", 43.5234, -79.2348);
 
         // Call queryLocationByAddress method with the sample address and handle result using callback
         queryLocationByAddress(userAddressInput, new QueryResultCallback() {
@@ -59,11 +67,8 @@ public class MainActivity extends AppCompatActivity {
         // Instance of the database
         FirebaseDatabase firebaseDB = FirebaseDatabase.getInstance();
 
-        // Reference to the "locations" node in Firebase DB
-        DatabaseReference locationsRef = firebaseDB.getReference("Locations");
-
         // Adding sample entry
-        locationsRef.child("1").setValue(new Location("123 Main St, Toronto, ON", 43.65107, -79.347015))
+        locationsDBRef().child("1").setValue(new Location("123 Main St, Toronto, ON", 43.65107, -79.347015))
                 .addOnCompleteListener(task -> {
 
                     // Check to see if operation was a success
@@ -79,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         // Adding another sample entry
-        locationsRef.child("2").setValue(new Location("456 King St, Toronto, ON", 43.6555, -79.3806))
+        locationsDBRef().child("2").setValue(new Location("456 King St, Toronto, ON", 43.6555, -79.3806))
                 .addOnCompleteListener(task -> {
 
                     // Check to see if operation was a success
@@ -100,10 +105,10 @@ public class MainActivity extends AppCompatActivity {
     public void queryLocationByAddress(String userAddressInput, QueryResultCallback callback) {
 
         // Reference to the "Locations" node in FirebaseDB
-        DatabaseReference locationsDBRef = FirebaseDatabase.getInstance().getReference("Locations");
+        // DatabaseReference locationsDBRef = FirebaseDatabase.getInstance().getReference("Locations");
 
         // Create a query that searches for the given address
-        Query query = locationsDBRef.orderByChild("address").equalTo(userAddressInput);
+        Query query = locationsDBRef().orderByChild("address").equalTo(userAddressInput);
 
         // Listener to retrieve data from FirebaseDB
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -151,17 +156,62 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Method to generate the next available ID value based on the ID value that already exists in the FirebaseDB
+    public void generateIDAndAddLocation(String address, double latitude, double longitude) {
+
+        // Retrieve all existing entries within "Locations" table in Firebase to find the current highest ID value
+        locationsDBRef().get().addOnCompleteListener(task -> {
+
+            // Check to see if retrieving data from FirebaseDB was successful AND if it returns a non-null value
+            if (task.isSuccessful() && task.getResult() != null) {
+
+                DataSnapshot locationsSnapshot = task.getResult(); // Snapshot of all children under "Location" table in FirebaseDB
+                int highestExistingID = 0;
+
+                // Convert DataSnapshot children to an array to allow index-based access
+                DataSnapshot[] locationsDataEntries = new DataSnapshot[(int) locationsSnapshot.getChildrenCount()];
+                int arrayIndex = 0;
+                for (DataSnapshot childSnapshot : locationsSnapshot.getChildren()) {
+                    locationsDataEntries[arrayIndex++] = childSnapshot;
+                }
+
+                // Index-based for loop to iterate over the array of snapshots
+                for(int i = 0; i < locationsDataEntries.length; i++) {
+                    try{
+                        int id = Integer.parseInt(locationsDataEntries[i].getKey());
+                        if (id > highestExistingID) {
+                            highestExistingID = id;
+                        }
+                    } catch (NumberFormatException e) {
+                        Log.e("GenerateNextID", "Invalid ID format in Firebase database", e);
+                    }
+                }
+
+                // Generate the next ID by incrementing the highest found ID
+                int nextID = highestExistingID + 1;
+                String newID = String.valueOf(nextID); // Convert nextID to String for Firebase
+
+                // Call addNewLocation method with the generated ID
+                addNewLocation(newID, address, latitude, longitude);
+            } else {
+
+                // Log an error message if retrieving existing entries from FirebaseDB failed
+                Log.e("GenerateNextIDError", "Failed to retrieve existing IDs", task.getException());
+            }
+        });
+    }
+
     // Method to add a new location to FirebaseDB
     public void addNewLocation(String id, String address, double latitude, double longitude) {
 
         // Reference to the "Locations" table in FirebaseDB
-        DatabaseReference locationsDBRef = FirebaseDatabase.getInstance().getReference("Locations");
+        // DatabaseReference locationsDBRef = FirebaseDatabase.getInstance().getReference("Locations");
 
         // Create a new location object with the user-input details
         Location newLocationDBEntry = new Location(address, latitude, longitude);
 
         // Add the new location under the specified ID
-        locationsDBRef.child(id).setValue(newLocationDBEntry)
+        locationsDBRef().child(id).setValue(newLocationDBEntry)
                 .addOnCompleteListener(task -> { // Listener to handle the result of the operation
 
                     // Check to see if operation was successful
