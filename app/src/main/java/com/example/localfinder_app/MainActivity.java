@@ -34,30 +34,9 @@ public class MainActivity extends AppCompatActivity {
 
         // addNewLocation("3", "321 Test Avenue, Toronto, ON", 43.1234, -43.3213);
 
-        generateIDAndAddLocation("433 Avenue Drive, Toronto, ON", 43.5234, -79.2348);
+        // generateIDAndAddLocation("434 Avenue Drive, Toronto, ON", 43.5234, -79.2348);
+        deleteLocationByAddress(userAddressInput);
 
-        // Call queryLocationByAddress method with the sample address and handle result using callback
-        queryLocationByAddress(userAddressInput, new QueryResultCallback() {
-            @Override
-
-            // Method to handle the query results once they are retrieved from FirebaseDB
-            // This method allows the queryLocationByAddress method to notify once the query is complete
-            public void queryResult(Location locationReceivedFromFirebase) {
-
-                // Check to see if location was found from FirebaseDB
-                if (locationReceivedFromFirebase != null) {
-
-                    // Log the latitude and longitude of the found location into Logcat
-                    Log.d("QueryResult", "Latitude: " + locationReceivedFromFirebase.latitudeValue);
-                    Log.d("QueryResult", "Longitude: " + locationReceivedFromFirebase.longitudeValue);
-
-                } else {
-
-                    // Log message when no matching address was found
-                    Log.d("QueryErrorResult", "No matching address found.");
-                }
-            }
-        });
     }
 
 
@@ -100,9 +79,38 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    // NEW Method to delete a location from Firebase by searching for its address
+    public void deleteLocationByAddress(String address) {
+
+        // Query Firebase for the location by address
+        queryLocationByAddress(address, new AddressQueryCallback() {
+            @Override
+            public void onAddressQuerySuccess(String id, Location location) {
+
+                // Delete the location by calling deleteLocationByID method with the found ID
+                deleteLocationByID(id, new DeleteCallback() {
+                    @Override
+                    public void onDeleteSuccess() {
+                        Log.d("DeleteLocationSuccess", "Location deleted successfully.");
+                    }
+
+                    @Override
+                    public void onDeleteFailure() {
+                        Log.e("DeleteLocationFail", "Failed to delete location.");
+                    }
+                });
+
+            }
+
+            @Override
+            public void onAddressQueryFailure() {
+                Log.d("DeleteLocationError", "Location not found for address: " + address);
+            }
+        });
+    }
 
     // Method to query FirebaseDB by user-input address and result results from DB through a callback
-    public void queryLocationByAddress(String userAddressInput, QueryResultCallback callback) {
+    public void queryLocationByAddress(String userAddressInput, AddressQueryCallback callback) {
 
         // Reference to the "Locations" node in FirebaseDB
         // DatabaseReference locationsDBRef = FirebaseDatabase.getInstance().getReference("Locations");
@@ -118,30 +126,19 @@ public class MainActivity extends AppCompatActivity {
                 // Check to see if any data was returned
                 if (dataSnapshot.exists()) {
 
-                    // Array creation to hold snapshots of matching results
-                    DataSnapshot[] locationSnapshotsArray = new DataSnapshot[(int) dataSnapshot.getChildrenCount()];
-                    int snapshotIndex = 0;
-
-                    // Convert dataSnapshot's children to an array
+                    // Loop through the children snapshot
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        locationSnapshotsArray[snapshotIndex++] = snapshot;
+                        String id = snapshot.getKey();
+                        Location locationQueryResult = snapshot.getValue(Location.class); // Retrieve location details
+
+                        if(locationQueryResult != null) {
+                            callback.onAddressQuerySuccess(id, locationQueryResult); // Pass the found ID and location to the callback
+                            return;
+                        }
                     }
-
-                    // For loop to process each snapshot in the array
-                    Location locationQueryResult = null;
-                    for (int arrayIndex = 0; arrayIndex < locationSnapshotsArray.length; arrayIndex++) {
-                        locationQueryResult = locationSnapshotsArray[arrayIndex].getValue(Location.class);
-
-                        // Breaks after retrieving the first valid location
-                        if (locationQueryResult != null)
-                            break;
-                    }
-
-                    // Pass the found location to the callback
-                    callback.queryResult(locationQueryResult);
-
                 } else {
-                    callback.queryResult(null);
+                    // callback.queryResult(null);
+                    callback.onAddressQueryFailure();
                 }
             }
 
@@ -151,7 +148,8 @@ public class MainActivity extends AppCompatActivity {
                 // Log an error if query fails
                 Log.e("QueryResult", "Database query failed", databaseError.toException());
 
-                callback.queryResult(null);
+                // callback.queryResult(null);
+                callback.onAddressQueryFailure();
             }
         });
     }
@@ -227,9 +225,29 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    // Callback interface to handle query results
-    public interface QueryResultCallback {
-        void queryResult(Location locationReceivedFromFirebase);
+    // NEW Method to delete a location from Firebase based on its ID
+    public void deleteLocationByID(String id, DeleteCallback callback) {
+        locationsDBRef().child(id).removeValue()
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()) {
+                        Log.d("DeleteLocationSuccess", "Location with ID " + id + " deleted successfully.");
+                        callback.onDeleteSuccess();
+                    } else {
+                        Log.e("DeleteLocationError", "Failed to delete location with ID " + id, task.getException());
+                        callback.onDeleteFailure();
+                    }
+                });
+    }
+
+    public interface AddressQueryCallback {
+        void onAddressQuerySuccess(String id, Location location);
+        void onAddressQueryFailure();
+    }
+
+    // Callback interface to handle deletion result
+    public interface DeleteCallback {
+        void onDeleteSuccess(); // Called if deletion is successful
+        void onDeleteFailure(); // Called if deletion fails
     }
 
 
@@ -241,8 +259,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Default constructor
         @SuppressWarnings("unused") // Suppresses "unused" warning
-        public Location() {
-        }
+        public Location() {}
 
         public Location(String address, double latitude, double longitude) {
             this.address = address;
