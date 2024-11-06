@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -19,6 +20,14 @@ public class LocationDatabaseHelper {
         return FirebaseDatabase.getInstance().getReference("Locations");
     }
 
+    // Helper method to check the validity of longitude and latitude values
+    // Returns true if both values are within the valid range, else returns false
+    // [-90,90] valid range for Latitude
+    // [-180,180] valid range for Longitude
+    // Method to validate longitude and latitude
+    private boolean validLongAndLat(double latitude, double longitude) {
+        return(latitude >= -90 && latitude <= 90) && (longitude >= -180 && longitude <= 180);
+    }
 
     /** The commented out code below was initially created to test to see if the FirebaseDB connection worked.
      *  It is no longer being used but this was the first setup for the database to test.
@@ -62,32 +71,56 @@ public class LocationDatabaseHelper {
 //                });
 //    } */
 
-    // Method to add a new location to FirebaseDB
-    public void addNewLocationInDB(String id, String address, double latitude, double longitude) {
+//    // Method to add a new location to FirebaseDB
+//    public void addNewLocationInDB(String id, String address, double latitude, double longitude) {
+//
+//        // Create a new location object with the user-input details
+//        Location newLocationDBEntry = new Location(address, latitude, longitude);
+//
+//        // Refer to the "Locations" table and add the new location under the specified ID
+//        locationsDBRef().child(id).setValue(newLocationDBEntry)
+//                .addOnCompleteListener(task -> { // Listener to handle the result of the operation
+//
+//                    // Check to see if operation was successful
+//                    if(task.isSuccessful()) {
+//
+//                        // Log message indicating success
+//                        Log.d("AddLocationDBSuccess", "New location added successfully. ");
+//                    } else {
+//
+//                        // Log message indicating fail
+//                        Log.e("AddLocationDBError", "Failed to add new location.", task.getException());
+//                    }
+//                });
+//    }
+
+    // NEW method to add new location to FirebaseDB
+    public Task<Void> addNewLocationInDB(String id, String address, double latitude, double longitude) {
 
         // Create a new location object with the user-input details
         Location newLocationDBEntry = new Location(address, latitude, longitude);
 
-        // Refer to the "Locations" table and add the new location under the specified ID
-        locationsDBRef().child(id).setValue(newLocationDBEntry)
-                .addOnCompleteListener(task -> { // Listener to handle the result of the operation
+        // Refer to the "Location" table and add the new location under the specified ID
+        return locationsDBRef().child(id).setValue(newLocationDBEntry)
+                .addOnCompleteListener(task -> {
 
-                    // Check to see if operation was successful
                     if(task.isSuccessful()) {
-
-                        // Log message indicating success
-                        Log.d("AddLocationDBSuccess", "New location added successfully. ");
+                        Log.d("AddLocationInDBSuccess", "New location added successfully.");
                     } else {
-
-                        // Log message indicating fail
-                        Log.e("AddLocationDBError", "Failed to add new location.", task.getException());
+                        Log.e("AddLocationInDBError", "Failed to add new location", task.getException());
                     }
                 });
     }
 
     // CRUD (Create)-----------------------------------------------------------------------------------------------------
     // Method to generate the next available ID value based on the ID value that already exists in the FirebaseDB
-    public void generateIDAndAddLocation(String address, double latitude, double longitude) {
+    public void generateIDAndAddLocation(String address, double latitude, double longitude , AddCallback callback) {
+
+        // Validate Latitude and Longitude values
+        if(!validLongAndLat(latitude, longitude)) {
+            Log.e("InvalidCoordinates", "Longitude and Latitude values are out of range.");
+            return; // Exit if coordinates are invalid
+        }
 
         // Retrieve all existing entries within "Locations" table in Firebase to find the current highest ID value
         locationsDBRef().get().addOnCompleteListener(task -> {
@@ -122,11 +155,19 @@ public class LocationDatabaseHelper {
                 String newID = String.valueOf(nextID); // Convert nextID to String for Firebase
 
                 // Call addNewLocation method with the generated ID
-                addNewLocationInDB(newID, address, latitude, longitude);
+                addNewLocationInDB(newID, address, latitude, longitude)
+                        .addOnCompleteListener(addTask -> {
+                            if(addTask.isSuccessful()) {
+                                callback.onAddSuccess();
+                            } else {
+                                callback.onAddFailure();
+                            }
+                        });
             } else {
 
-                // Log an error message if retrieving existing entries from FirebaseDB failed
-                Log.e("GenerateNextIDError", "Failed to retrieve existing IDs", task.getException());
+//                // Log an error message if retrieving existing entries from FirebaseDB failed
+//                Log.e("GenerateNextIDError", "Failed to retrieve existing IDs", task.getException());
+                callback.onAddFailure();
             }
         });
     }
@@ -181,6 +222,13 @@ public class LocationDatabaseHelper {
     // CRUD (UPDATE)-----------------------------------------------------------------------------------------------------
     // Method to update data
     public void updateLocationByAddress(String address, String updatedAddress, double updatedLatitude, double updatedLongitude, UpdateCallback callback) {
+
+        // Validate Longitude and Latitude values
+        if(!validLongAndLat(updatedLatitude, updatedLongitude)) {
+            Log.e("InvalidCoordinates", "Longitude and Latitude values are out of range.");
+            callback.onUpdateFailure(); // Trigger failure callback if coordinates are invalid
+            return;
+        }
 
         // Query for the location by address in the DB
         queryLocationByAddress(address, new AddressQueryCallback() {
@@ -258,6 +306,11 @@ public class LocationDatabaseHelper {
         });
     }
 
+    public interface AddCallback {
+        void onAddSuccess(); // Called if addition is successful
+        void onAddFailure(); // called if addition fails
+    }
+
     /*  AddressQueryCallback interface defines a way for the queryLocationByAddress method to communicate
      *   results back once it finishes retrieving data from Firebase. */
     public interface AddressQueryCallback {
@@ -269,16 +322,16 @@ public class LocationDatabaseHelper {
         void onAddressQueryFailure();
     }
 
-    // Callback interface to handle deletion result
-    public interface DeleteCallback {
-        void onDeleteSuccess(); // Called if deletion is successful
-        void onDeleteFailure(); // Called if deletion fails
-    }
-
     // Callback interface to handle updates
     public interface UpdateCallback {
         void onUpdateSuccess();
         void onUpdateFailure();
+    }
+
+    // Callback interface to handle deletion result
+    public interface DeleteCallback {
+        void onDeleteSuccess(); // Called if deletion is successful
+        void onDeleteFailure(); // Called if deletion fails
     }
 
 

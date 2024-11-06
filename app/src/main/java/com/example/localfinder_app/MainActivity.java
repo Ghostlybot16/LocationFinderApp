@@ -84,5 +84,42 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
+        // Test to attempt to add a location with invalid Longitude and Latitude
+        // This test works as intended.
+//        String invalidAddress = "Invalid Address, Toronto, ON";
+//        double invalidLatitude = 95.7823; // Invalid latitude
+//        double invalidLongitude  = -185.2345; // Invalid longitude
+//        locationDBHelper.generateIDAndAddLocation(invalidAddress, invalidLatitude, invalidLongitude);
+
+        // Test to attempt to update a location with invalid longitude and latitude
+        // This test runs as intended, error message received for the invalid coords
+//        String existingAddress = "433 Avenue Drive, Toronto, ON";
+//        String newUpdatedAddress = "Updated Address, Toronto, ON";
+//        double newInvalidLatitude = 100;
+//        double newInvalidLongitude = 200;
+//        locationDBHelper.updateLocationByAddress(existingAddress, newUpdatedAddress, newInvalidLongitude, newInvalidLatitude, new LocationDatabaseHelper.UpdateCallback() {
+//            @Override
+//            public void onUpdateSuccess() {
+//                Log.d("TestUpdateSuccess", "Location update successful.");
+//            }
+//
+//            @Override
+//            public void onUpdateFailure() {
+//                Log.d("TestUpdateFail", "Location update failed due to invalid longitude/latitude value");
+//            }
+//        });
+
+        locationDBHelper.generateIDAndAddLocation("Sample Address3", 43.7, -79.2, new LocationDatabaseHelper.AddCallback() {
+            @Override
+            public void onAddSuccess() {
+                Log.d("AddLocationSuccess", "Location added successfully.");
+            }
+
+            @Override
+            public void onAddFailure() {
+                Log.e("AddLocationError", "Failed to add location");
+            }
+        });
+
     }
 }
