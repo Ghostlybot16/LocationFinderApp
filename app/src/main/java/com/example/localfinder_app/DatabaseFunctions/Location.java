@@ -1,4 +1,4 @@
-package DatabaseFunctions;
+package com.example.localfinder_app.DatabaseFunctions;
 
 // Location class to represent each location entry in Firebase DB
 public class Location {

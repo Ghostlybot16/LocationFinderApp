@@ -1,4 +1,4 @@
-package DatabaseFunctions;
+package com.example.localfinder_app.DatabaseFunctions;
 
 import android.util.Log;
 
@@ -63,7 +63,7 @@ public class LocationDatabaseHelper {
 //    } */
 
     // Method to add a new location to FirebaseDB
-    public void addNewLocation(String id, String address, double latitude, double longitude) {
+    public void addNewLocationInDB(String id, String address, double latitude, double longitude) {
 
         // Create a new location object with the user-input details
         Location newLocationDBEntry = new Location(address, latitude, longitude);
@@ -76,15 +76,16 @@ public class LocationDatabaseHelper {
                     if(task.isSuccessful()) {
 
                         // Log message indicating success
-                        Log.d("AddLocationSuccess", "New location added successfully. ");
+                        Log.d("AddLocationDBSuccess", "New location added successfully. ");
                     } else {
 
                         // Log message indicating fail
-                        Log.e("AddLocationError", "Failed to add new location.", task.getException());
+                        Log.e("AddLocationDBError", "Failed to add new location.", task.getException());
                     }
                 });
     }
 
+    // CRUD (Create)-----------------------------------------------------------------------------------------------------
     // Method to generate the next available ID value based on the ID value that already exists in the FirebaseDB
     public void generateIDAndAddLocation(String address, double latitude, double longitude) {
 
@@ -121,7 +122,7 @@ public class LocationDatabaseHelper {
                 String newID = String.valueOf(nextID); // Convert nextID to String for Firebase
 
                 // Call addNewLocation method with the generated ID
-                addNewLocation(newID, address, latitude, longitude);
+                addNewLocationInDB(newID, address, latitude, longitude);
             } else {
 
                 // Log an error message if retrieving existing entries from FirebaseDB failed
@@ -130,6 +131,8 @@ public class LocationDatabaseHelper {
         });
     }
 
+
+    // CRUD (READ)-----------------------------------------------------------------------------------------------------
     // Method to query FirebaseDB by user-input address and result results from DB through a callback
     public void queryLocationByAddress(String userAddressInput, AddressQueryCallback callback) {
 
@@ -175,8 +178,43 @@ public class LocationDatabaseHelper {
         });
     }
 
-    // NEW Method to delete a location from Firebase based on its ID
-    public void deleteLocationByID(String id, DeleteCallback callback) {
+    // CRUD (UPDATE)-----------------------------------------------------------------------------------------------------
+    // Method to update data
+    public void updateLocationByAddress(String address, String updatedAddress, double updatedLatitude, double updatedLongitude, UpdateCallback callback) {
+
+        // Query for the location by address in the DB
+        queryLocationByAddress(address, new AddressQueryCallback() {
+            @Override
+            public void onAddressQuerySuccess(String id, Location location) {
+
+                // Update the data fields
+                locationsDBRef().child("address").setValue(updatedAddress);
+                locationsDBRef().child("latitudeValue").setValue(updatedLatitude);
+                locationsDBRef().child("longitudeValue").setValue(updatedLongitude)
+                        .addOnCompleteListener(task -> {
+
+                            if(task.isSuccessful()) {
+                                Log.d("UpdateLocation_Success", "Location updated successfully");
+                                callback.onUpdateSuccess();
+                            } else {
+                                Log.e("UpdateLocation_Error", "Failed to update location", task.getException());
+                                callback.onUpdateFailure();
+                            }
+                        });
+            }
+
+            @Override
+            public void onAddressQueryFailure() {
+                Log.d("UpdateLocationError", "Location not found for address: " + address);
+                callback.onUpdateFailure();
+            }
+        });
+
+
+    }
+
+    // Method to delete a location from Firebase based on its ID
+    public void deleteLocationByIDFirebase(String id, DeleteCallback callback) {
         locationsDBRef().child(id).removeValue()
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()) {
@@ -189,8 +227,9 @@ public class LocationDatabaseHelper {
                 });
     }
 
-    // NEW Method to delete a location from Firebase by searching for its address
-    public void deleteLocationByAddress(String address) {
+    // CRUD (DELETE)-----------------------------------------------------------------------------------------------------
+    // Method to delete a location from Firebase by searching for its address
+    public void deleteLocationByAddress(String address, DeleteCallback callback) {
 
         // Query Firebase for the location by address
         queryLocationByAddress(address, new AddressQueryCallback() {
@@ -198,7 +237,7 @@ public class LocationDatabaseHelper {
             public void onAddressQuerySuccess(String id, Location location) {
 
                 // Delete the location by calling deleteLocationByID method with the found ID
-                deleteLocationByID(id, new DeleteCallback() {
+                deleteLocationByIDFirebase(id, new DeleteCallback() {
                     @Override
                     public void onDeleteSuccess() {
                         Log.d("DeleteLocationSuccess", "Location deleted successfully.");
@@ -234,6 +273,12 @@ public class LocationDatabaseHelper {
     public interface DeleteCallback {
         void onDeleteSuccess(); // Called if deletion is successful
         void onDeleteFailure(); // Called if deletion fails
+    }
+
+    // Callback interface to handle updates
+    public interface UpdateCallback {
+        void onUpdateSuccess();
+        void onUpdateFailure();
     }
 
 
