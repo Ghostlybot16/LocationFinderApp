@@ -46,6 +46,10 @@ public class MainActivity extends AppCompatActivity {
         deleteButton = findViewById(R.id.deleteButton);
         saveButton = findViewById(R.id.saveButton);
 
+        // Instance of Location Uploader
+        // SampleLocationUploader dataUploader = new SampleLocationUploader();
+        // dataUploader.addSampleLocations(); // Upload locations into FirebaseDB
+
         // Query Button
         queryButton.setOnClickListener(view -> {
             String address = addressInputField.getText().toString().trim();
