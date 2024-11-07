@@ -283,6 +283,8 @@ public class LocationDatabaseHelper {
             @Override
             public void onAddressQuerySuccess(String id, Location location) {
 
+                Log.d("DeleteLocation", "Address found with ID: " + id + ", proceeding to delete.");
+
                 // Delete the location by calling deleteLocationByID method with the found ID
                 deleteLocationByIDFirebase(id, new DeleteCallback() {
                     @Override
