@@ -32,44 +32,44 @@ public class LocationDatabaseHelper {
     /** The commented out code below was initially created to test to see if the FirebaseDB connection worked.
      *  It is no longer being used but this was the first setup for the database to test.
      */
-//    // Method to set up initial location data in FirebaseDB
-    public void setupInitialDB() {
+////    // Method to set up initial location data in FirebaseDB
+//    public void setupInitialDB() {
+//
+//        // Instance of the database
+//        FirebaseDatabase firebaseDB = FirebaseDatabase.getInstance();
+//
+//        // Adding sample entry
+//        locationsDBRef().child("1").setValue(new Location("123 Main St, Toronto, ON", 43.65107, -79.347015))
+//                .addOnCompleteListener(task -> {
+//
+//                    // Check to see if operation was a success
+//                    if (task.isSuccessful()) {
+//
+//                        // Log success message to Logcat
+//                        Log.d("FirebaseSetup", "Sample location 1 added successfully");
+//                    } else {
+//
+//                        // Log error message to Logcat
+//                        Log.e("FirebaseSetup", "Failed to add location 1", task.getException());
+//                    }
+//                });
 
-        // Instance of the database
-        FirebaseDatabase firebaseDB = FirebaseDatabase.getInstance();
-
-        // Adding sample entry
-        locationsDBRef().child("1").setValue(new Location("123 Main St, Toronto, ON", 43.65107, -79.347015))
-                .addOnCompleteListener(task -> {
-
-                    // Check to see if operation was a success
-                    if (task.isSuccessful()) {
-
-                        // Log success message to Logcat
-                        Log.d("FirebaseSetup", "Sample location 1 added successfully");
-                    } else {
-
-                        // Log error message to Logcat
-                        Log.e("FirebaseSetup", "Failed to add location 1", task.getException());
-                    }
-                });
-
-        // Adding another sample entry
-        locationsDBRef().child("2").setValue(new Location("456 King St, Toronto, ON", 43.6555, -79.3806))
-                .addOnCompleteListener(task -> {
-
-                    // Check to see if operation was a success
-                    if (task.isSuccessful()) {
-
-                        // Log success message to Logcat
-                        Log.d("FirebaseSetup", "Sample location 2 added successfully");
-                    } else {
-
-                        // Log error message to Logcat
-                        Log.e("FirebaseSetup", "Failed to add location 2", task.getException());
-                    }
-                });
-    }
+//        // Adding another sample entry
+//        locationsDBRef().child("2").setValue(new Location("456 King St, Toronto, ON", 43.6555, -79.3806))
+//                .addOnCompleteListener(task -> {
+//
+//                    // Check to see if operation was a success
+//                    if (task.isSuccessful()) {
+//
+//                        // Log success message to Logcat
+//                        Log.d("FirebaseSetup", "Sample location 2 added successfully");
+//                    } else {
+//
+//                        // Log error message to Logcat
+//                        Log.e("FirebaseSetup", "Failed to add location 2", task.getException());
+//                    }
+//                });
+//    }
 
 //    // Method to add a new location to FirebaseDB
 //    public void addNewLocationInDB(String id, String address, double latitude, double longitude) {
@@ -94,7 +94,7 @@ public class LocationDatabaseHelper {
 //                });
 //    }
 
-    // NEW method to add new location to FirebaseDB
+    // Method to add new location to FirebaseDB
     public Task<Void> addNewLocationInDB(String id, String address, double latitude, double longitude) {
 
         // Create a new location object with the user-input details
@@ -176,33 +176,47 @@ public class LocationDatabaseHelper {
     // CRUD (READ)-----------------------------------------------------------------------------------------------------
     // Method to query FirebaseDB by user-input address and result results from DB through a callback
     public void queryLocationByAddress(String userAddressInput, AddressQueryCallback callback) {
-        // Format the input by trimming whitespace
+
+        // Format the input by trimming whitespace in order to avoid accidental spaces
         String formattedAddress = userAddressInput.trim();
 
-        // Create a query that searches for the exact address
+        // Create a query that searches for the exact address in the "Locations" table in FirebaseDB
         Query query = locationsDBRef().orderByChild("address").equalTo(formattedAddress);
 
         // Listener to retrieve data from FirebaseDB
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                // Check to see if any data exists for the specified address
                 if (dataSnapshot.exists()) {
+
+                    // Iterate through all matching child snapshots (for multiple entries)
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                        // Retrieve ID of the current snapshot
                         String id = snapshot.getKey();
+
+                        // Convert the snapshot data into Location object
                         Location locationQueryResult = snapshot.getValue(Location.class);
 
+                        // Check if Locations object was created successfully (not null)
                         if (locationQueryResult != null) {
-                            callback.onAddressQuerySuccess(id, locationQueryResult);
+                            callback.onAddressQuerySuccess(id, locationQueryResult); // success callback if ID found and location object
                             return;
                         }
                     }
                 } else {
+
+                    // If no data found, failure callback
                     callback.onAddressQueryFailure();
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                // Error log message
                 Log.e("QueryResult", "Database query failed", databaseError.toException());
                 callback.onAddressQueryFailure();
             }

@@ -149,12 +149,16 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+
+
+
+
+
+        // -------------------Backend Code Logic Tests ------------------------------------------------------
+
         // Calling the setup method to initialize data in Firebase DB
         // Should be commented out after running it the first time
         // locationDBHelper.setupInitialDB();
-
-        // Placeholder value for user-input address input. This value will come from the UI later on
-        String userAddressInput = "123 Main St, Toronto, ON";
 
 
         // ----------------------------------------------------------------------------------------------------------

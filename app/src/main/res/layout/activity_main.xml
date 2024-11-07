@@ -9,8 +9,8 @@
     <EditText
         android:id="@+id/addressInputField"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter Address to Query"
+        android:layout_height="48dp"
+        android:hint="@string/queryFieldText"
         android:inputType="text"
         android:layout_marginBottom="8dp"/>
 
@@ -18,7 +18,7 @@
         android:id="@+id/queryButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Query Location"
+        android:text="@string/queryLocationButton"
         android:layout_marginBottom="16dp"/>
 
     <!-- Separator -->
@@ -28,7 +28,7 @@
         android:background="#CCCCCC"
         android:layout_marginBottom="16dp" />
 
-    <!-- Display Queried Location (Editable Fields for Update) -->
+    <!-- Display Queried Location (Editable Fields) -->
     <LinearLayout
         android:id="@+id/queryResultDisplayArea"
         android:layout_width="match_parent"
@@ -41,7 +41,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Location Details"
+            android:text="@string/queryResultTitle"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
@@ -51,7 +51,7 @@
             android:id="@+id/displayAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Address"
+            android:hint="@string/address"
             android:inputType="text"
             android:enabled="false"
             android:layout_marginBottom="8dp" />
@@ -61,7 +61,7 @@
             android:id="@+id/displayLatitude"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Latitude"
+            android:hint="@string/latitude"
             android:inputType="numberDecimal"
             android:enabled="false"
             android:layout_marginBottom="8dp"/>
@@ -71,7 +71,7 @@
             android:id="@+id/displayLongitude"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Longitude"
+            android:hint="@string/longitude"
             android:inputType="numberDecimal"
             android:enabled="false"
             android:layout_marginBottom="16dp"/>
@@ -88,7 +88,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_edit"
-                android:contentDescription="Edit"
+                android:contentDescription="@string/editButtonText"
                 android:layout_marginEnd="8dp" />
 
             <!-- Delete Button to Delete Location -->
@@ -97,7 +97,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_delete"
-                android:contentDescription="Delete" />
+                android:contentDescription="@string/deleteButtonText" />
         </LinearLayout>
 
         <!-- Save Button for Saving Changes (Only Visible in Edit Mode) -->
@@ -105,7 +105,7 @@
             android:id="@+id/saveButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save Changes"
+            android:text="@string/saveChangesButton"
             android:visibility="gone"
             android:layout_marginTop="16dp" />
     </LinearLayout>
@@ -121,7 +121,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add New Location"
+        android:text="@string/addNewLocation"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
@@ -129,8 +129,8 @@
     <EditText
         android:id="@+id/newAddressField"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter Address"
+        android:layout_height="48dp"
+        android:hint="@string/enterAddress"
         android:inputType="text"
         android:layout_marginBottom="8dp"/>
 
@@ -138,7 +138,7 @@
         android:id="@+id/newLatitudeField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Latitude"
+        android:hint="@string/enterLatitude"
         android:inputType="numberDecimal"
         android:minHeight="48dp"
         android:layout_marginBottom="8dp"/>
@@ -147,7 +147,7 @@
         android:id="@+id/newLongitudeField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Longitude"
+        android:hint="@string/enterLongitude"
         android:inputType="numberDecimal"
         android:minHeight="48dp"
         android:layout_marginBottom="16dp"/>
@@ -156,5 +156,5 @@
         android:id="@+id/addLocationButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save Location"/>
+        android:text="@string/saveLocation"/>
 </LinearLayout>

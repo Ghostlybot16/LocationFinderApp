@@ -10,6 +10,7 @@ public class SampleLocationUploader {
     public void addSampleLocations() {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Locations");
 
+        // Array of locations from GTA
         String[] locations = {
                 "CN Tower,43.6426,-79.3871",
                 "Royal Ontario Museum,43.6677,-79.3948",
@@ -113,16 +114,29 @@ public class SampleLocationUploader {
                 "Kensington Market,43.6550,-79.4020"
         };
 
+        // Loop through each item in the locations array
         for (int i = 0; i < locations.length; i++) {
+
+            // Get the current location entry from the array as a single string
             String loc = locations[i];
+
+            // Split the location string by commas to separate address, latitude and longitude
             String[] parts = loc.split(",");
+
+            // Assign the first part as the address
             String address = parts[0];
+
+            // Convert the 2nd and 3rd part (latitude & longitude) from String to double and assign it as their name
             double latitude = Double.parseDouble(parts[1]);
             double longitude = Double.parseDouble(parts[2]);
 
             // Use the loop index (i+1) as the ID
             String id = String.valueOf(i + 1); // Sequential IDs starting from 1
+
+            // New location object with the extracted address, latitude and longitude values
             Location location = new Location(address, latitude, longitude);
+
+            // Add this location entry to the FirebaseDB under the generated ID values
             databaseReference.child(id).setValue(location);
         }
     }

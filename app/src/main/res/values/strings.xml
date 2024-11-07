@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">LocalFinder_App</string>
+    <string name="queryFieldText">Enter Address to Query</string>
+    <string name="queryLocationButton">Query Location</string>
+
+    <string name="queryResultTitle">Location Details</string>
+
+    <string name="address">Address</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+
+    <string name="editButtonText">Edit</string>
+    <string name="deleteButtonText">Delete</string>
+    <string name="saveChangesButton">Save Changes</string>
+
+    <string name="addNewLocation">Add New Location</string>
+    <string name="enterAddress">Enter Address</string>
+    <string name="enterLatitude">Enter Latitude</string>
+    <string name="enterLongitude">Enter Longitude</string>
+    <string name="saveLocation">Save Location</string>
 </resources>
